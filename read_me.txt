@@ -9,13 +9,6 @@ read_tadpole.py : functions to preprocess the tadpole dataset and matrices store
 
 preprocessing_dataset.py : functions for normalization, splitting of data, initialization of data...
 
-standard_methods_mean_imputation.py : 
-4 standards methods for classification of data with missing values. Missing values imputed by putting the mean value
-   - random forest
-   - linear SVM 
-   - linear ridge
-   - MLP one layer
-
 wilcoxon_tesT.py : Wilcoxon score between two arrays
 ___________________________________________________________________________________________________________________________________________________________________________
 PREPROCESSING
@@ -86,11 +79,11 @@ layers.py : program to define the layers of the MG-GAE architecture.
 programs required to run the program: 
    - initializations.py 
 
-model.py : definition of the MG-GAE architecture with tensorflow. 
+model.py : definition of the MG-GAE architecture with Tensorflow. 
 programs required to run the program:
    - layers.py
 
-preprocessing.py: functions to load the dataset for the MG-GAE. TO DOOOOO!!!!!!!!!!!!!!!!!!!!!!!!!!
+preprocessing.py: functions to load the dataset for the MG-GAE. Creation of the inputs of the architecture and loading of the dataset from the csv file. 
 
 MG_GAE_main.py: main file to perform the optimization of the hyperparameters with RBFOpt or to run the architecture for different training/validation/test initializations. For the TADPOLE dataset
 programs required to run the program:
@@ -161,7 +154,17 @@ Parameters:
 For each one of the 23 support matrices, we do a PCA decomposition of the hidden_a outputs of the GCNN layer. 
 In the plot, we differentiate the subjects that have the value of the attribute(s) that defines the support matrix and the one that do not have it. We split the subjects that have the value of the attribute(s) that defines the support matrix between the one that are MCIc and the one that are MCInc. 
 The support appears in the following order: Women, Men, Women from 84 to 92, Men from 84 to 92, age between 84 and 92, Women from 79 to 84, Men from 79 and 84, age between 79 and 84, Women from 74 to 79, Men from 74 to 79, age between 74 and 79, Women from 69 to 74, Men from 69 and 74, age between 69 and 74, Women from 64 to 69, Men from 64 to 69, age between 64 and 69, Women from 59 to 64, Men from 59 and 64, age between 59 and 64, Women from 54 to 59, Men from 54 to 59, age between 54 and 59.
-___________________________________________________________________________________________________________________________________________________________________________
+___________________________________________________________________________________________________________________________________________________________
+OTHER METHODS
+___________________________________________________________________________________________________________________________________________________________
+Random Forest, SVM, linear ridge, MLP
+standard_methods_mean_imputation.py : 
+4 standards methods for classification of data with missing values. Missing values imputed by putting the mean value
+   - random forest
+   - linear SVM 
+   - linear ridge
+   - MLP one layer
+___________________________________________________________________________________________________________________________________________________________
 Replication of Vivar et al 
 vivar.py : replication of the architecture used by Vivar et al. Can do the optimization of the hyperparameters with RBFOpt.
 files required to run the program:
