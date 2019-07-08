@@ -15,7 +15,7 @@ from scipy.sparse import csgraph
 from sklearn.metrics import roc_curve, auc
 from sklearn.preprocessing import Imputer
 from scipy.spatial import distance
-import rbfopt #FOR OPTIMIZATION
+#import rbfopt #FOR OTPIMIZATION
 
 import preprocessing_dataset
 import read_tadpole
@@ -300,7 +300,7 @@ def running_one_time(n, dropout, seed, n_conv_feat,lr, l2_regu, nb_layers):
         if (np.mod(num_iter, num_iter_test)==0):
             msg = "[TRN] iter = %03i, cost = %3.2e, |grad| = %.2e (%3.2es),auc = %3.2e" \
                                         % (num_iter, list_training_loss[-1], list_training_norm_grad[-1], training_time, roc_auc_train)
-            #print msg
+            print msg
 
             auc_train_list.append(roc_auc_train)
             pred_train_list.append(pred_train)
@@ -313,6 +313,8 @@ def running_one_time(n, dropout, seed, n_conv_feat,lr, l2_regu, nb_layers):
             roc_auc_val = auc(fpr, tpr)
             auc_val_list.append(roc_auc_val)
             pred_val_list.append(pred_val)
+            msg =  "[VAL] iter = %03i, AUC = %3.2e" % (num_iter, roc_auc_val)
+            print msg
 
             #Test Code
             tic = time.time()
@@ -329,25 +331,20 @@ def running_one_time(n, dropout, seed, n_conv_feat,lr, l2_regu, nb_layers):
             pred_test_list.append(pred)
 
             msg =  "[TST] iter = %03i, cost = %3.2e, AUC = %3.2e" % (num_iter, list_test_pred_error[-1], roc_auc)
-            #print msg
+            print msg
 
         num_iter += 1
     return (auc_test_list, auc_train_list, auc_val_list, pred_train_list, pred_test_list, pred_val_list, labels_test_reduce, labels_train_reduce, labels_val_reduce)
 
 
 def optimize(x):
-    """
-    Function to optimize dropout, n_conv_feat (number of outputs of the GCNN layers), lr (learning rate), l2_regu (term in loss function to do the trade-off between l2-regularization and binary cross-entropy), nb_layers (number of GCNN layers), ord_row (number of Chebyshev polynomials fo the GCNN layer) with RBFOpt.
-    Input:
-        x: value given by RBFOpt for the hyperparameters  by running alg.optimize()
-    Output: opposite of the max validation AUC (function to minimize)
-    """
     seed=0
     nb_itera =200
     print(x)
-    dropout, n_conv_feat, lr, l2_regu,nb_layers=x
+    dropout, n_conv_feat, lr, l2_regu=x
     n_conv_feat=int(n_conv_feat)
-    nb_layers=int(nb_layers)
+    nb_layers=2
+
 
     auc_test_list, auc_train_list, auc_val_list, pred_train_list, pred_test_list, pred_val_list, labels_test_reduce, labels_train_reduce, labels_val_reduce= running_one_time(nb_itera, dropout, seed, n_conv_feat, lr, l2_regu, nb_layers)
 
@@ -358,13 +355,11 @@ def optimize(x):
     print(np.max(auc_val_list))
     return -np.max(auc_val_list)
 
-"""bb=rbfopt.RbfoptUserBlackBox(5, np.array([0.5, 1, 0.0005, 0.000001, 1]), np.array([1.0, 100, 0.05, 0.0001, 10]), np.array(['R', 'I', 'R', 'R', 'I']), optimize)
+"""bb=rbfopt.RbfoptUserBlackBox(4, np.array([0.5, 1, 0.0005, 0.000001]), np.array([1.0, 100, 0.05, 0.0001]), np.array(['R', 'I', 'R', 'R']), optimize)
 settings=rbfopt.RbfoptSettings(max_iterations=2000,max_noisy_evaluations=2000,max_evaluations=2000, minlp_solver_path='~/TADPOLE/bonmin', nlp_solver_path='~/TADPOLE/ipopt', target_objval=-1)
 alg=rbfopt.RbfoptAlgorithm(settings, bb)
-objval, x, itercount, evalcount, fast_evalcount=alg.optimize()
-
-"""
-nb_seeds=3
+objval, x, itercount, evalcount, fast_evalcount=alg.optimize()"""
+nb_seeds=100
 save=False
 
 auc_test=[]
@@ -378,7 +373,7 @@ labels_test=[]
 labels_val=[]
 for seed in range(nb_seeds):
     nb_itera =200
-    dropout, n_conv_feat, lr, l2_regu,nb_layers=0.832077907, 76, 0.0005, 0.000001, 3
+    dropout, n_conv_feat, lr, l2_regu,nb_layers=0.967, 67, 0.000529, 0.0000309, 2
     n_conv_feat=int(n_conv_feat)
     nb_layers=int(nb_layers)
 
@@ -390,15 +385,16 @@ for seed in range(nb_seeds):
     print(auc_val_list)
     print('auc test', auc_test_value)
     pred_test_list_final = pred_test_list[iteration_max_val]
-    auc_test.append(auc_test_value)
-    auc_train.append(auc_train_list)
-    auc_val.append(auc_val_list)
-    pred_test.append(pred_test_list_final)
-    pred_train.append(pred_train_list[iteration_max_val])
-    pred_val.append(pred_val_list[iteration_max_val])
-    labels_train.append(labels_train_reduce)
-    labels_test.append(labels_test_reduce)
-    labels_val.append(labels_val_reduce)
+    if save:
+        auc_test.append(auc_test_value)
+        auc_train.append(auc_train_list)
+        auc_val.append(auc_val_list)
+        pred_test.append(pred_test_list_final)
+        pred_train.append(pred_train_list[iteration_max_val])
+        pred_val.append(pred_val_list[iteration_max_val])
+        labels_train.append(labels_train_reduce)
+        labels_test.append(labels_test_reduce)
+        labels_val.append(labels_val_reduce)
 
 
 if save:

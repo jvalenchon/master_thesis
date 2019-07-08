@@ -120,7 +120,7 @@ class Train_test_matrix_completion:
                 list_cheb.append(2*tf.matmul(L, list_cheb[k-1])  - list_cheb[k-2])
 
     def __init__(self, M, L, A, labels_train, labels_test, labels_val, testing_set_mask, training_set_mask,validation_set_mask,
-                 order_chebyshev_row = 3, n_conv_feat=32, dropout=0.98,
+                 n_conv_feat=32, dropout=0.98,
                  learning_rate=0.01, l2_regu=0.00001, nb_layers=5, idx_gpu = '/gpu:1'):
         """
                  Neural network architecture. Output classification result for each row of M.
@@ -130,14 +130,12 @@ class Train_test_matrix_completion:
                     L: laplacian matrices, respectively for the age, sex and age and sex graphs,
                     labels_train, labels_test, labels_val: labels for each set for every subject,
                     training_set_mask, testing_set_mask, validation_set_mask: indexes of subjects that respectively belong to the training, testing and validation sets,
-                    order_chebyshev_row: order to use for the Chebyshev polynomials. Default value = 18,
                     n_conv_feat: number of weights to use for the GCNN layer. Default value = 36,
                     l2_regu: coefficient to use in front of the l2 regularization term. Default value = 1,
                     dropout: dropout rate on the GCN output. Default = 0.5,
                     learning_rate: learning rate. Default value = 0.001,
                     nb_layers: number of GCNN layers. Default value: 5
         """
-        self.ord_row = order_chebyshev_row
         self.n_conv_feat = n_conv_feat
 
         with tf.Graph().as_default() as g:
@@ -145,14 +143,6 @@ class Train_test_matrix_completion:
                 self.graph = g
                 tf.set_random_seed(0)
                 with tf.device(idx_gpu):
-
-                        #loading of the laplacians
-                        self.L = tf.cast(L, 'float32')
-                        self.norm_L = self.L - tf.diag(tf.ones([L.shape[0], ]))
-
-                        #compute all chebyshev polynomials a priori
-                        self.list_row_cheb_pol = list()
-                        self.compute_cheb_polynomials(self.norm_L, self.ord_row, self.list_row_cheb_pol)
 
                         #definition of constant matrices
                         self.A=tf.constant(A, dtype=tf.float32)
@@ -170,32 +160,31 @@ class Train_test_matrix_completion:
                         weights=[]
                         bias=[]
                         if nb_layers==1:
-                            weights.append(tf.get_variable('weights_W', shape=[self.ord_row*M.shape[1], 1], initializer=tf.contrib.layers.xavier_initializer()))
+                            weights.append(tf.get_variable('weights_W', shape=[M.shape[1], 1], initializer=tf.contrib.layers.xavier_initializer()))
                             bias.append( tf.Variable(tf.zeros([1,])))
                         else:
-                            weights.append(tf.get_variable('weights_W', shape=[self.ord_row*M.shape[1], self.n_conv_feat], initializer=tf.contrib.layers.xavier_initializer()))
+                            weights.append(tf.get_variable('weights_W', shape=[M.shape[1], self.n_conv_feat], initializer=tf.contrib.layers.xavier_initializer()))
                             bias.append(tf.Variable(tf.zeros([self.n_conv_feat,])))
                             for i in range(nb_layers-2):
-                                weights.append(tf.get_variable('weights_%d' %i, shape=[self.ord_row*self.n_conv_feat, self.n_conv_feat], initializer=tf.contrib.layers.xavier_initializer()))
+                                weights.append(tf.get_variable('weights_%d' %i, shape=[self.n_conv_feat, self.n_conv_feat], initializer=tf.contrib.layers.xavier_initializer()))
                                 bias.append(tf.Variable(tf.zeros([self.n_conv_feat,])))
-                            weights.append(tf.get_variable("weight_final", shape=[self.ord_row*self.n_conv_feat, 1], initializer=tf.contrib.layers.xavier_initializer()))
+                            weights.append(tf.get_variable("weight_final", shape=[self.n_conv_feat, 1], initializer=tf.contrib.layers.xavier_initializer()))
                             bias.append(tf.Variable(tf.zeros([1,])))
 
                         # GCNN architecture TRAINING
                         if nb_layers==1:
-                            self.final_feat_users = self.mono_conv_cheby(self.list_row_cheb_pol, self.ord_row, self.M, weights[0], bias[0])
+                            self.final_feat_users = self.mono_conv(self.A, self.M, weights[0], bias[0])
                             self.final_feat_users = tf.nn.dropout(self.final_feat_users, dropout)
 
                         else:
-                            self.final_feat_users = self.mono_conv_cheby(self.list_row_cheb_pol, self.ord_row, self.M, weights[0], bias[0])
+                            self.final_feat_users = self.mono_conv(self.A, self.M, weights[0], bias[0])
                             self.final_feat_users = tf.nn.dropout(self.final_feat_users, dropout)
                             self.final_feat_users = tf.nn.relu(self.final_feat_users)
-
                             for i in range(nb_layers-2):
-                                self.final_feat_users = self.mono_conv_cheby(self.list_row_cheb_pol, self.ord_row, self.final_feat_users, weights[i+1], bias[i+1])
+                                self.final_feat_users = self.mono_conv(self.A, self.final_feat_users, weights[i+1], bias[i+1])
                                 self.final_feat_users = tf.nn.dropout(self.final_feat_users, dropout)
                                 self.final_feat_users = tf.nn.relu(self.final_feat_users)
-                            self.final_feat_users = self.mono_conv_cheby(self.list_row_cheb_pol, self.ord_row, self.final_feat_users, weights[-1], bias[-1])
+                            self.final_feat_users = self.mono_conv(self.A, self.final_feat_users, weights[-1], bias[-1])
                             self.final_feat_users = tf.nn.dropout(self.final_feat_users, dropout)
 
                         self.classification=tf.sigmoid(self.final_feat_users)
@@ -237,7 +226,7 @@ class Train_test_matrix_completion:
                         self.session.run(init)
 
 
-def running_one_time(n, dropout, seed, n_conv_feat,lr, l2_regu, nb_layers, ord_row):
+def running_one_time(n, dropout, seed, n_conv_feat,lr, l2_regu, nb_layers):
     """
     function to run the architecture one time
     Inputs:
@@ -248,7 +237,6 @@ def running_one_time(n, dropout, seed, n_conv_feat,lr, l2_regu, nb_layers, ord_r
        dropout: dropout rate on the GCNN output. Default = 0.5,
        lr: learning rate. Default value = 0.001
        nb_layers: number of GCNN layers
-       ord_row: number of Chebyshev polynomials
     Outputs:
        auc_test_list, auc_train_list, auc_val_list: lists of the AUC values on the test, train and validation sets for the n runs,
        pred_train_list, pred_test_list, pred_val_list: lists of the prediction values on the test, train and validation sets for the n runs,
@@ -274,7 +262,7 @@ def running_one_time(n, dropout, seed, n_conv_feat,lr, l2_regu, nb_layers, ord_r
     labels_val_reduce=np.delete(labels_val, indexes_validation, 0)
 
     learning_obj = Train_test_matrix_completion(M, Lrow, Wrow, labels_train, labels_test, labels_val, testing_set_mask, training_set_mask, validation_set_mask,
-                                                        order_chebyshev_row = ord_row, n_conv_feat=n_conv_feat, dropout=dropout,learning_rate=lr, l2_regu=l2_regu, nb_layers=nb_layers)
+                                                        n_conv_feat=n_conv_feat, dropout=dropout,learning_rate=lr, l2_regu=l2_regu, nb_layers=nb_layers)
 
     num_iter_test = 10
     num_total_iter_training = n
@@ -294,7 +282,7 @@ def running_one_time(n, dropout, seed, n_conv_feat,lr, l2_regu, nb_layers, ord_r
     for k in range(num_iter, num_total_iter_training):
 
         tic = time.time()
-        list_of_outputs = learning_obj.session.run([learning_obj.optimizer, learning_obj.loss, learning_obj.norm_grad, learning_obj.classification_train, learning_obj.binary_entropy] + learning_obj.var_grad)
+        list_of_outputs = learning_obj.session.run([learning_obj.optimizer, learning_obj.loss, learning_obj.norm_grad, learning_obj.classification_train, learning_obj.binary_entropy] + learning_obj.var_grad)#learning_obj.loss_frob, learning_obj.loss_trace_row, learning_obj.frob_norm_H, learning_obj.frob_norm_W, learning_obj.binary_entropy
         current_training_loss = list_of_outputs[1]
         norm_grad = list_of_outputs[2]
         pred_train = list_of_outputs[3]
@@ -325,9 +313,9 @@ def running_one_time(n, dropout, seed, n_conv_feat,lr, l2_regu, nb_layers, ord_r
             roc_auc_val = auc(fpr, tpr)
             auc_val_list.append(roc_auc_val)
             pred_val_list.append(pred_val)
-
             msg =  "[VAL] iter = %03i, AUC = %3.2e" % (num_iter, roc_auc_val)
             print msg
+
             #Test Code
             tic = time.time()
             pred_error, pred = learning_obj.session.run([learning_obj.predictions_error, learning_obj.classification_test])
@@ -359,12 +347,11 @@ def optimize(x):
     seed=0
     nb_itera =200
     print(x)
-    dropout, n_conv_feat, lr, l2_regu,nb_layers, ord_row=x
+    dropout, n_conv_feat, lr, l2_regu,nb_layers=x
     n_conv_feat=int(n_conv_feat)
     nb_layers=int(nb_layers)
-    ord_row=int(ord_row)
 
-    auc_test_list, auc_train_list, auc_val_list, pred_train_list, pred_test_list, pred_val_list, labels_test_reduce, labels_train_reduce, labels_val_reduce= running_one_time(nb_itera, dropout, seed, n_conv_feat, lr, l2_regu, nb_layers, ord_row)
+    auc_test_list, auc_train_list, auc_val_list, pred_train_list, pred_test_list, pred_val_list, labels_test_reduce, labels_train_reduce, labels_val_reduce= running_one_time(nb_itera, dropout, seed, n_conv_feat, lr, l2_regu, nb_layers)
 
     iteration_max_val = np.argmax(auc_val_list)
     pred_test_list_final = pred_test_list[iteration_max_val]
@@ -373,11 +360,10 @@ def optimize(x):
     print(np.max(auc_val_list))
     return -np.max(auc_val_list)
 
-"""bb=rbfopt.RbfoptUserBlackBox(6, np.array([0.5, 1, 0.0005, 0.000001, 1, 1]), np.array([1.0, 100, 0.05, 0.0001, 10, 5]), np.array(['R', 'I', 'R', 'R', 'I', 'I']), optimize)
+"""bb=rbfopt.RbfoptUserBlackBox(5, np.array([0.5, 1, 0.0005, 0.000001, 1]), np.array([1.0, 100, 0.05, 0.0001, 10]), np.array(['R', 'I', 'R', 'R', 'I']), optimize)
 settings=rbfopt.RbfoptSettings(max_iterations=2000,max_noisy_evaluations=2000,max_evaluations=2000, minlp_solver_path='~/TADPOLE/bonmin', nlp_solver_path='~/TADPOLE/ipopt', target_objval=-1)
 alg=rbfopt.RbfoptAlgorithm(settings, bb)
 objval, x, itercount, evalcount, fast_evalcount=alg.optimize()
-
 
 """
 nb_seeds=3
@@ -398,7 +384,7 @@ for seed in range(nb_seeds):
     n_conv_feat=int(n_conv_feat)
     nb_layers=int(nb_layers)
 
-    auc_test_list, auc_train_list, auc_val_list, pred_train_list, pred_test_list, pred_val_list, labels_test_reduce, labels_train_reduce, labels_val_reduce= running_one_time(nb_itera, dropout, seed, n_conv_feat, lr, l2_regu, nb_layers, 3)
+    auc_test_list, auc_train_list, auc_val_list, pred_train_list, pred_test_list, pred_val_list, labels_test_reduce, labels_train_reduce, labels_val_reduce= running_one_time(nb_itera, dropout, seed, n_conv_feat, lr, l2_regu, nb_layers)
 
     iteration_max_val = np.argmax(auc_val_list)
     auc_test_value = auc_test_list[iteration_max_val]
@@ -406,15 +392,16 @@ for seed in range(nb_seeds):
     print(auc_val_list)
     print('auc test', auc_test_value)
     pred_test_list_final = pred_test_list[iteration_max_val]
-    auc_test.append(auc_test_value)
-    auc_train.append(auc_train_list)
-    auc_val.append(auc_val_list)
-    pred_test.append(pred_test_list_final)
-    pred_train.append(pred_train_list[iteration_max_val])
-    pred_val.append(pred_val_list[iteration_max_val])
-    labels_train.append(labels_train_reduce)
-    labels_test.append(labels_test_reduce)
-    labels_val.append(labels_val_reduce)
+    if save:
+        auc_test.append(auc_test_value)
+        auc_train.append(auc_train_list)
+        auc_val.append(auc_val_list)
+        pred_test.append(pred_test_list_final)
+        pred_train.append(pred_train_list[iteration_max_val])
+        pred_val.append(pred_val_list[iteration_max_val])
+        labels_train.append(labels_train_reduce)
+        labels_test.append(labels_test_reduce)
+        labels_val.append(labels_val_reduce)
 
 
 if save:
