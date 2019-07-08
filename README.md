@@ -38,7 +38,7 @@ programs required to run the program:
    - preprocessing_dataset.py
 creation of 'stat_results_v1.csv' and 'stat_results_v1_notext.csv' (no headers, only the p-values) 
 
-mask_creation.py : function to create the masks on M depending on the attributes. Creates 4 binary matrices, one for age, one for sex, one for age&sex and one for no significance. It uses the statistical results from feature_dep.py and put a threshold on the p-value corresponding to an attribute for a feature to know if the feature is dependent on the attribute or not.
+mask_creation.py : function to create the masks on M depending on the attributes for tghe TADPOLE dataset. Creates 4 binary matrices, one for age, one for sex, one for age&sex and one for no significance. It uses the statistical results from feature_dep.py and put a threshold on the p-value corresponding to an attribute for a feature to know if the feature is dependent on the attribute or not.
 files required to run the program:
    - matrix M : 'bl_data_MCI_v1.csv'
    - statistical results without the headers 'stat_results_v1_notext.csv'
@@ -47,6 +47,24 @@ programs required to run the program:
    - preprocessing_dataset.py 
 creation of 'mask_age.csv', 'mask_sex.csv', 'mask_agesex.csv', 'mask_nosignificance.csv'
 
+support_creation.py : creation of the masks on the synthetic dataset and of the supports (for the GAE architecture) for both datasets. 
+For the TADPOLE dataset
+files required to run the program:
+   - age and sex column : 'age.csv'
+                          'gender.csv'
+   - masks on the dataset: 'mask_age.csv', 'mask_sex.csv', 'mask_agesex.csv', 'mask_nosignificance.csv'
+programs required to run the program:
+   - preprocessing_dataset.py 
+creation of "sex_women.csv", "sex_men.csv", "age_84_92_women.csv", "age_84_92_men.csv", "age84_92.csv", "age_79_84_women.csv", "age_79_84_men.csv", "age79_84.csv", "age_74_79_women.csv", "age_74_79_men.csv", "age74_79.csv", "age_69_74_women.csv", "age_69_74_men.csv", "age69_74.csv", "age_64_69_women.csv", "age_64_69_men.csv", "age64_69.csv", "age_59_64_women.csv", "age_59_64_men.csv", "age59_64.csv",  "age_54_59_women.csv", "age_54_59_men.csv", "age54_59.csv" 
+For the synthetic dataset
+files required to run the program:
+   - age and sex column : 'ages_synthetic_data_noteasy.csv'
+                           'sexs_synthetic_data_noteasy.csv'
+   - feature dependence array: 'feat_dependence_synthetic_data_noteasy.csv'
+programs required to run the program:
+   - preprocessing_dataset.py 
+creation of 'mask_age_synthnoteasy.csv', 'mask_sex_synthnoteasy.csv', 'mask_agesex_synthnoteasy.csv' and "women_synth_noteasy.csv", "men_synth_noteasy.csv", "age_84_92_women_synth_noteasy.csv", "age_84_92_men_synth_noteasy.csv", "age_84_92_synth_noteasy.csv", "age_79_84_women_synth_noteasy.csv", "age_79_84_men_synth_noteasy.csv", "age_79_84_synth_noteasy.csv", "age_74_79_women_synth_noteasy.csv", "age_74_79_men_synth_noteasy.csv", "age_74_79_synth_noteasy.csv", "age_69_74_women_synth_noteasy.csv", "age_69_74_men_synth_noteasy.csv", "age_69_74_synth_noteasy.csv", "age_64_69_women_synth_noteasy.csv", "age_64_69_men_synth_noteasy.csv", "age_64_69_synth_noteasy.csv", "age_59_64_women_synth_noteasy.csv", "age_59_64_men_synth_noteasy.csv", "age_59_64_synth_noteasy.csv", "age_54_59_women_synth_noteasy.csv", "age_54_59_men_synth_noteasy.csv", "age_54_59_synth_noteasy.csv"  
+   
 CREATION SYNTHETIC DATASET 
 synthetic_data.py: creation of the synthetic dataset. Details are in the appendix of the thesis for the creation 
 creation of - matrix M : 'synthetic_data_noteasy.csv'
