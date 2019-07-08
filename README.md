@@ -3,7 +3,7 @@ library to download:
 - Tensorflow 1.1.0
 - RBFOpt (for optimization) https://github.com/coin-or/rbfopt 
 
-FILES FOR BOTH ARCHITECTURES
+FILES FOR EVERY ARCHITECTURES
 
 read_tadpole.py : functions to preprocess the tadpole dataset and matrices stored in .csv files
 
