@@ -2,7 +2,7 @@ This repository contains the code done during my Master Thesis at McGill Univers
 My Master thesis can be found on the website of my lab (http://networks.ece.mcgill.ca/node/423).
 My work is summarized on my webpage (http://networks.ece.mcgill.ca/node/421) where I explain the different methods implemented here. 
 
-In order to run the code, you need:
+In order to run the code, you need to:
 - use python 2 (2.7.13)
 - download: 
    - Tensorflow 1.1.0
