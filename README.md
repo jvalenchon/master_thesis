@@ -3,6 +3,8 @@ library to download:
 - Tensorflow 1.1.0
 - RBFOpt (for optimization) https://github.com/coin-or/rbfopt 
 
+The TADPOLE dataset can be downloaded by registering to ADNI (http://adni.loni.usc.edu/tadpole-challenge-dataset-available/).
+
 FILES FOR EVERY ARCHITECTURES
 
 read_tadpole.py : functions to preprocess the tadpole dataset and matrices stored in .csv files
@@ -176,8 +178,10 @@ programs required to run the program:
    - preprocessing_dataset.py
 
 ___________________________________________________________________________________________________________________________________________________________________________
-Replication of Parisot et al (ChebyNet architecture)
-parisot.py: replication of the architecture used by Parisot et al. Can do the optimization of the hyperparameters with RBFOpt.
+GCNN-based architectures. These architectures are simply using multiple GCNN or GCN layers to perform the classification task.  
+
+GCNN-based architecture with the ChebyNet architecture (used by Parisot et al. on the ADNI dataset). Number of GCNN layers is an hyperparameter.
+gcnn_cheby_layers.py: main file to perform the optimization of the hyperparameters with RBFOpt or to run the architecture for different training/validation/test initializations. For the TADPOLE dataset
 files required to run the program:
    - matrix M : 'bl_data_MCI_v1.csv'
    - adjacency matrix : 'affinity_mat_parisot_v1.csv' 
@@ -186,8 +190,28 @@ programs required to run the program:
    - read_tadpole.py
    - preprocessing_dataset.py
 
-GCNN-based architecture. 
-parisot_gcn.py: main file to perform the optimization of the hyperparameters with RBFOpt or to run the architecture for different training/validation/test initializations. For the TADPOLE dataset
+GCNN-based architecture with GCN layers (Kipf and Welling). Number of GCN layers is an hyperparameter.
+gcnn_gcn_layers.py: main file to perform the optimization of the hyperparameters with RBFOpt or to run the architecture for different training/validation/test initializations. For the TADPOLE dataset
+files required to run the program:
+   - matrix M : 'bl_data_MCI_v1.csv'
+   - adjacency matrix : 'affinity_mat_parisot_v1.csv' 
+   - labels Y : 'labels_comma.csv'
+programs required to run the program:
+   - read_tadpole.py
+   - preprocessing_dataset.py
+   
+GCNN-based architecture with the ChebyNet architecture (used by Parisot et al. on the ADNI dataset). Number of GCNN layers is fixed.
+gcnn_cheby_layers_2.py: main file to perform the optimization of the hyperparameters with RBFOpt or to run the architecture for different training/validation/test initializations. For the TADPOLE dataset
+files required to run the program:
+   - matrix M : 'bl_data_MCI_v1.csv'
+   - adjacency matrix : 'affinity_mat_parisot_v1.csv' 
+   - labels Y : 'labels_comma.csv'
+programs required to run the program:
+   - read_tadpole.py
+   - preprocessing_dataset.py
+
+GCNN-based architecture with GCN layers (Kipf and Welling). Number of GCN layers is fixed.
+gcnn_gcn_layers_2.py: main file to perform the optimization of the hyperparameters with RBFOpt or to run the architecture for different training/validation/test initializations. For the TADPOLE dataset
 files required to run the program:
    - matrix M : 'bl_data_MCI_v1.csv'
    - adjacency matrix : 'affinity_mat_parisot_v1.csv' 
@@ -218,3 +242,6 @@ files required to run the program:
 programs required to run the program:
    - read_tadpole.py
 - preprocessing_dataset.py
+
+______________________________________________________________________________________________________________________________________
+
