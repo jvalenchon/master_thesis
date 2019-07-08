@@ -1,10 +1,15 @@
-RUN in python 2 (2.7.13)
-library to download: 
-- Tensorflow 1.1.0
-- RBFOpt (for optimization) https://github.com/coin-or/rbfopt 
+This repository contains the code done during my Master Thesis at McGill University. My Master thesis was on Graph-based machine learning algorithms for predicting disease outcomes.
+My Master thesis can be found on the website of my lab (http://networks.ece.mcgill.ca/node/423).
+My work is summarized on my webpage (http://networks.ece.mcgill.ca/node/421) where I explain the different methods implemented here. 
 
-The TADPOLE dataset can be downloaded by registering to ADNI (http://adni.loni.usc.edu/tadpole-challenge-dataset-available/).
+In order to run the code, you need:
+- use python 2 (2.7.13)
+- download: 
+   - Tensorflow 1.1.0
+   - RBFOpt (for optimization) https://github.com/coin-or/rbfopt 
+- register on the ADNI dataset and download the TADPOLE dataset (http://adni.loni.usc.edu/tadpole-challenge-dataset-available/).
 
+__________________________________________________________________________________________________________________________________
 FILES FOR EVERY ARCHITECTURES
 
 read_tadpole.py : functions to preprocess the tadpole dataset and matrices stored in .csv files
